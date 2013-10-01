@@ -13,6 +13,7 @@ public class GeocodeV3Test {
 		GeocoderResult geocoderResult = geocoder.getLocation("274 Marconi Blvd Suite 300, Columbus OH 43215");
 		assertNotNull(geocoderResult);
 		assertTrue(geocoderResult.getStatusCode() == GeocoderStatus.OK);
+		assertNotNull(geocoderResult.getZipCode());
 	}
 	
 	@Test
@@ -21,6 +22,7 @@ public class GeocodeV3Test {
 		GeocoderResult geocoderResult = geocoder.getLocation("1 Capitol Square, Columbus, OH ‎43215", Country.US);
 		assertNotNull(geocoderResult);
 		assertTrue(geocoderResult.getStatusCode() == GeocoderStatus.OK);	
+		assertNotNull(geocoderResult.getZipCode());
 	}
 	
 	@Test
@@ -29,6 +31,7 @@ public class GeocodeV3Test {
 		GeocoderResult geocoderResult = geocoder.getLocation("1600 Pennsylvania Ave NW", "", "Washington, D.C.", "DC", "20500", Country.US);
 		assertNotNull(geocoderResult);
 		assertTrue(geocoderResult.getStatusCode() == GeocoderStatus.OK);	
+		assertNotNull(geocoderResult.getZipCode());
 	}
 	
 	@Test

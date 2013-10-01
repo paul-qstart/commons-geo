@@ -1,23 +1,22 @@
 package com.qstartlabs.commons.geo;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HeaderElement;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.HttpsURLConnection;
+
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,16 +26,16 @@ import org.json.JSONTokener;
 import com.qstartlabs.commons.lang.collections.LRUCache;
 import com.qstartlabs.commons.lang.location.Country;
 import com.qstartlabs.commons.lang.location.USState;
+import com.google.gdata.util.common.util.Base64;
+import com.google.gdata.util.common.util.Base64DecoderException;
 
 public class GoogleGeoCoder implements Geocoder {
 
-    // domedia.com key
-    // ABQIAAAAUJhhpQd-CN8S5FmHWTj2GhTbl-T2VaYB0cNwTPhFD-CuPRjQoBRQLbZJk69odU0U5UdmpKx3fPBhow
-    private final static String KEY = "ABQIAAAAVIqaRdSsUlQYvdOHk2-MWxT2yXp_ZAY8_ufC3CFXhHIE1NvwkxSWOPyFZFMhVWkb1fmcXhGYhBUd7Q";
-    private final static String BASEURL = "https://maps.googleapis.com/maps/api/geocode/json?sensor=false";
-//    private final static String KEYURL = BASEURL + "&key=" + KEY;
+	// This is QStart's private, paid for key. DO not distribute. Do not use without talking to Jeff R. Lamb
+	private final static String KEY="hNLLlpxjVJfhSsAsrbWsbpBLl50=";
+//	private final static String BASEURL = "https://maps.googleapis.com/maps/api/geocode/json?sensor=false";
+    private final static String BASEURL = "https://maps.googleapis.com/maps/api/geocode/json?sensor=false&client=gme-qstartlabsllc";
     private final static String KEYURL = BASEURL;
-//    private final static String COUNTRY_PARAM = "&gl=";
 
     private final static String PARAM_ENCODING = "UTF-8";
     private final static String CONTENT_TYPE = "Content-Type";
@@ -49,7 +48,7 @@ public class GoogleGeoCoder implements Geocoder {
     private final static String ADDRESS_COMPONENTS = "address_components";
     private final static String COUNTRY = "country";
     private final static String ADMINISTRATIVE_AREA = "administrative_area_level_1";
-    private final static String ADMINISTRATIVE_AREA2 = "administrative_area_level_3";
+    private final static String ADMINISTRATIVE_AREA2 = "administrative_area_level_2";
     private final static String LOCALITY = "locality";
     private final static String POSTAL_CODE = "postal_code";
     private final static String ROUTE = "route";
@@ -415,52 +414,22 @@ public class GoogleGeoCoder implements Geocoder {
         return geoResult;
     }
 
-    private static synchronized JSONObject makeRequestInternal(String url) {
+    private static synchronized JSONObject makeRequestInternal(String unsignedUrl) {
         JSONObject googleResult = null;
         long t0 = System.nanoTime();
 
-        HttpClient httpClient = new HttpClient();
-        GetMethod httpGet = new GetMethod(url);
+        String url = unsignedUrl;
+        
         try {
-            int status = httpClient.executeMethod(httpGet);
-            InputStream response = httpGet.getResponseBodyAsStream();
-            if (status == HttpStatus.SC_OK) {
-                // Extract the encoding.
-                String encoding = DEFAULT_ENCODING;
-                Header contentType = httpGet.getResponseHeader(CONTENT_TYPE);
-                if (contentType != null) {
-                    HeaderElement[] contentTypeElements = contentType.getElements();
-                    for (HeaderElement contentTypeElement : contentTypeElements) {
-                        NameValuePair charset = contentTypeElement.getParameterByName(CHARSET);
-                        if (charset != null) {
-                            encoding = charset.getValue();
-                            break;
-                        }
-                    }
-                }
-                try {
-                    Reader reader = new InputStreamReader(response, encoding);
-                    JSONTokener jTokener = new JSONTokener(reader);
-                    googleResult = new JSONObject(jTokener);
-                } catch (UnsupportedEncodingException uee) {
-                    // TODO Replace this with real logging.
-                    System.err.println("GoogleGeoCoder request returned unsupported encoding " + encoding);
-                } catch (JSONException jsone) {
-                    // TODO Replace with real logging.
-                    System.err.println("GoogleGeoCoder error parsing/traversing JSON response: " + jsone);
-                }
-            } else {
-                // TODO Replace this with real logging.
-                System.err.println("GoogleGeoCoder request returned status " + status);
-            }
-        } catch (HttpException he) {
-            // TODO Replace this with real logging.
-            System.err.println("GoogleGeoCoder request error: " + he);
-        } catch (IOException ioe) {
-            // TODO Replace this with real logging.
-            System.err.println("GoogleGeoCoder unrecoverable IO error: " + ioe);
-        } finally {
-            httpGet.releaseConnection();
+            url = signRequest(unsignedUrl);
+    	    HttpsURLConnection connection = (HttpsURLConnection) new URL(url).openConnection();
+    	    Reader reader = new InputStreamReader(connection.getInputStream(), DEFAULT_ENCODING);
+    	    
+    	    JSONTokener jTokener = new JSONTokener(reader);
+            googleResult = new JSONObject(jTokener);
+    	    
+        } catch (Exception e) {
+        	e.printStackTrace();
         }
 
         long t1 = System.nanoTime() - t0;
@@ -634,6 +603,25 @@ public class GoogleGeoCoder implements Geocoder {
             }
         }
         return state;
+    }
+
+    private static synchronized String signRequest(String urlString) throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, URISyntaxException, Base64DecoderException, MalformedURLException{
+    	URL url = new URL(urlString);
+    	//Convert from web safe base 64 to binary:
+    	String keyString = KEY.replace('-', '+');
+    	keyString = keyString.replace('_', '/');
+    	byte[] key = Base64.decode(keyString);
+    	String path = url.getPath();
+    	String query = url.getQuery();
+    	String resource = path+'?'+query;
+    	SecretKeySpec sha1Key = new SecretKeySpec(key, "HmacSHA1");
+    	Mac mac = Mac.getInstance("HmacSHA1");
+    	mac.init(sha1Key);
+    	byte[] sigBytes = mac.doFinal(resource.getBytes());
+    	String signature = Base64.encode(sigBytes);
+    	signature.replace('+', '-');
+    	signature.replace('/', '_');
+    	return urlString+"&signature="+signature;
     }
 
 }
