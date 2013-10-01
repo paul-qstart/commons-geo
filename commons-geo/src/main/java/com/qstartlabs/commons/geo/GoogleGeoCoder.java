@@ -618,9 +618,7 @@ public class GoogleGeoCoder implements Geocoder {
     	Mac mac = Mac.getInstance("HmacSHA1");
     	mac.init(sha1Key);
     	byte[] sigBytes = mac.doFinal(resource.getBytes());
-    	String signature = Base64.encode(sigBytes);
-    	signature.replace('+', '-');
-    	signature.replace('/', '_');
+    	String signature = Base64.encodeWebSafe(sigBytes, true);
     	return urlString+"&signature="+signature;
     }
 
