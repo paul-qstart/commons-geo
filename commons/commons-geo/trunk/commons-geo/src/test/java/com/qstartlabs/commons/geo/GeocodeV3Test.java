@@ -8,9 +8,18 @@ import com.qstartlabs.commons.lang.location.Country;
 public class GeocodeV3Test {
 	
 	@Test
+	public void testGetLocationByLocationHyphenated() {
+		Geocoder geocoder = new GoogleGeoCoder();
+		GeocoderResult geocoderResult = geocoder.getLocation("421 West 27th Street, Winston-Salem, NC 27102");
+		assertNotNull(geocoderResult);
+		assertTrue(geocoderResult.getStatusCode() == GeocoderStatus.OK);
+		assertNotNull(geocoderResult.getZipCode());
+	}
+
+	@Test
 	public void testGetLocationByLocation() {
 		Geocoder geocoder = new GoogleGeoCoder();
-		GeocoderResult geocoderResult = geocoder.getLocation("274 Marconi Blvd Suite 300, Columbus OH 43215");
+		GeocoderResult geocoderResult = geocoder.getLocation("274 Marconi Blvd, Columbus, OH 43214");
 		assertNotNull(geocoderResult);
 		assertTrue(geocoderResult.getStatusCode() == GeocoderStatus.OK);
 		assertNotNull(geocoderResult.getZipCode());
@@ -40,7 +49,6 @@ public class GeocodeV3Test {
 		GeocoderResult geocoderResult = geocoder.reverseLookup(39.9675235, -83.0051184);
 		assertNotNull(geocoderResult);
 		assertEquals("43215", geocoderResult.getZipCode());
-		
 	}
 
 }
