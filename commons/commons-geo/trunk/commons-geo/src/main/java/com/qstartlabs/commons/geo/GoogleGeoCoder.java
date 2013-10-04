@@ -17,6 +17,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.HttpsURLConnection;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,8 +27,6 @@ import org.json.JSONTokener;
 import com.qstartlabs.commons.lang.collections.LRUCache;
 import com.qstartlabs.commons.lang.location.Country;
 import com.qstartlabs.commons.lang.location.USState;
-import com.google.gdata.util.common.util.Base64;
-import com.google.gdata.util.common.util.Base64DecoderException;
 
 public class GoogleGeoCoder implements Geocoder {
 
@@ -605,12 +604,13 @@ public class GoogleGeoCoder implements Geocoder {
         return state;
     }
 
-    private static synchronized String signRequest(String urlString) throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, URISyntaxException, Base64DecoderException, MalformedURLException{
+    private static synchronized String signRequest(String urlString) throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, URISyntaxException, MalformedURLException{
     	URL url = new URL(urlString);
     	//Convert from web safe base 64 to binary:
     	String keyString = KEY.replace('-', '+');
     	keyString = keyString.replace('_', '/');
-    	byte[] key = Base64.decode(keyString);
+    	Base64 base64 = new Base64(true); // websafe base64 encoder/decoder
+    	byte[] key = base64.decode(keyString.getBytes());
     	String path = url.getPath();
     	String query = url.getQuery();
     	String resource = path+'?'+query;
@@ -618,7 +618,7 @@ public class GoogleGeoCoder implements Geocoder {
     	Mac mac = Mac.getInstance("HmacSHA1");
     	mac.init(sha1Key);
     	byte[] sigBytes = mac.doFinal(resource.getBytes());
-    	String signature = Base64.encodeWebSafe(sigBytes, true);
+    	String signature = new String(base64.encode(sigBytes));
     	return urlString+"&signature="+signature;
     }
 
