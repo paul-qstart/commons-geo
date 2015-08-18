@@ -1,30 +1,20 @@
 package com.qstartlabs.commons.geo;
 
 import com.qstartlabs.commons.lang.collections.LRUCache;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GoogleTimeZoneQuery implements TimeZoneQuery {
 
-    // This is QStart's private, paid for key. DO not distribute. Do not use without talking to Jeff R. Lamb
-    private final static String KEY="hNLLlpxjVJfhSsAsrbWsbpBLl50=";
     private final static String BASEURL = "https://maps.googleapis.com/maps/api/timezone/json?client=gme-qstartlabsllc";
     private final static String KEYURL = BASEURL;
 
@@ -135,7 +125,7 @@ public class GoogleTimeZoneQuery implements TimeZoneQuery {
         String url = unsignedUrl;
 
         try {
-            url = signRequest(unsignedUrl);
+            url = RequestSigner.signRequest(unsignedUrl);
             HttpsURLConnection connection = (HttpsURLConnection) new URL(url).openConnection();
             Reader reader = new InputStreamReader(connection.getInputStream(), DEFAULT_ENCODING);
 
@@ -189,24 +179,6 @@ public class GoogleTimeZoneQuery implements TimeZoneQuery {
         }
 
         return new TimeZoneResult(dstOffset, rawOffset, timeZoneId, timeZoneName, statusCode);
-    }
-
-    private static synchronized String signRequest(String urlString) throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, URISyntaxException, MalformedURLException {
-        URL url = new URL(urlString);
-        //Convert from web safe base 64 to binary:
-        String keyString = KEY.replace('-', '+');
-        keyString = keyString.replace('_', '/');
-        Base64 base64 = new Base64(true); // websafe base64 encoder/decoder
-        byte[] key = base64.decode(keyString.getBytes());
-        String path = url.getPath();
-        String query = url.getQuery();
-        String resource = path+'?'+query;
-        SecretKeySpec sha1Key = new SecretKeySpec(key, "HmacSHA1");
-        Mac mac = Mac.getInstance("HmacSHA1");
-        mac.init(sha1Key);
-        byte[] sigBytes = mac.doFinal(resource.getBytes());
-        String signature = new String(base64.encode(sigBytes));
-        return urlString+"&signature="+signature;
     }
 
 }

@@ -1,37 +1,26 @@
 package com.qstartlabs.commons.geo;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import javax.net.ssl.HttpsURLConnection;
-
-import org.apache.commons.codec.binary.Base64;
+import com.qstartlabs.commons.lang.collections.LRUCache;
+import com.qstartlabs.commons.lang.location.Country;
+import com.qstartlabs.commons.lang.location.USState;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import com.qstartlabs.commons.lang.collections.LRUCache;
-import com.qstartlabs.commons.lang.location.Country;
-import com.qstartlabs.commons.lang.location.USState;
+import javax.net.ssl.HttpsURLConnection;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class GoogleGeoCoder implements Geocoder {
 
-	// This is QStart's private, paid for key. DO not distribute. Do not use without talking to Jeff R. Lamb
-	private final static String KEY="hNLLlpxjVJfhSsAsrbWsbpBLl50=";
 //	private final static String BASEURL = "https://maps.googleapis.com/maps/api/geocode/json?sensor=false";
     private final static String BASEURL = "https://maps.googleapis.com/maps/api/geocode/json?sensor=false&client=gme-qstartlabsllc";
     private final static String KEYURL = BASEURL;
@@ -420,7 +409,7 @@ public class GoogleGeoCoder implements Geocoder {
         String url = unsignedUrl;
         
         try {
-            url = signRequest(unsignedUrl);
+            url = RequestSigner.signRequest(unsignedUrl);
     	    HttpsURLConnection connection = (HttpsURLConnection) new URL(url).openConnection();
     	    Reader reader = new InputStreamReader(connection.getInputStream(), DEFAULT_ENCODING);
     	    
@@ -602,24 +591,6 @@ public class GoogleGeoCoder implements Geocoder {
             }
         }
         return state;
-    }
-
-    private static synchronized String signRequest(String urlString) throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, URISyntaxException, MalformedURLException{
-    	URL url = new URL(urlString);
-    	//Convert from web safe base 64 to binary:
-    	String keyString = KEY.replace('-', '+');
-    	keyString = keyString.replace('_', '/');
-    	Base64 base64 = new Base64(true); // websafe base64 encoder/decoder
-    	byte[] key = base64.decode(keyString.getBytes());
-    	String path = url.getPath();
-    	String query = url.getQuery();
-    	String resource = path+'?'+query;
-    	SecretKeySpec sha1Key = new SecretKeySpec(key, "HmacSHA1");
-    	Mac mac = Mac.getInstance("HmacSHA1");
-    	mac.init(sha1Key);
-    	byte[] sigBytes = mac.doFinal(resource.getBytes());
-    	String signature = new String(base64.encode(sigBytes));
-    	return urlString+"&signature="+signature;
     }
 
 }
