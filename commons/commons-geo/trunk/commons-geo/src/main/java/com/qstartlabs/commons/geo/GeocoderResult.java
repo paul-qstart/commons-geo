@@ -25,6 +25,8 @@ public class GeocoderResult implements java.io.Serializable {
     private double latitude;
     private double longitude;
     private int accuracy;
+    private String streetNumber;
+    private String street;
     private String city;
     private String state;
     private String zipCode;
@@ -42,16 +44,18 @@ public class GeocoderResult implements java.io.Serializable {
      * @param accuracy
      *            Should be one of the constants defined in this file
      */
-    public GeocoderResult(double latitude, double longitude, int accuracy, String city, String state, String zipCode,
+    public GeocoderResult(double latitude, double longitude, int accuracy, String streetNumber, String street, String city, String state, String zipCode,
             String country) {
-        this(latitude, longitude, accuracy, city, state, zipCode, country, GeocoderStatus.OK);
+        this(latitude, longitude, accuracy, streetNumber, street, city, state, zipCode, country, GeocoderStatus.OK);
     }
 
-    public GeocoderResult(double latitude, double longitude, int accuracy, String city, String state, String zipCode,
+    public GeocoderResult(double latitude, double longitude, int accuracy, String streetNumber, String street, String city, String state, String zipCode,
             String country, GeocoderStatus statusCode) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.accuracy = accuracy;
+        this.streetNumber = streetNumber;
+        this.street = street;
         this.city = city;
         this.state = state;
         this.zipCode = zipCode;
@@ -59,9 +63,9 @@ public class GeocoderResult implements java.io.Serializable {
         this.statusCode = statusCode;
     }
 
-    public GeocoderResult(double latitude, double longitude, int accuracy, String city, String state, String zipCode,
+    public GeocoderResult(double latitude, double longitude, int accuracy, String streetNumber, String street, String city, String state, String zipCode,
             String country, GeocoderStatus statusCode, String correctedAddress) {
-    	this(latitude, longitude, accuracy, city, state, zipCode, country, statusCode);
+    	this(latitude, longitude, accuracy, streetNumber, street, city, state, zipCode, country, statusCode);
     	this.correctedAddress = correctedAddress;
     }
 
@@ -79,6 +83,14 @@ public class GeocoderResult implements java.io.Serializable {
 
     public double getLongitude() {
         return this.longitude;
+    }
+
+    public String getStreetNumber() {
+        return this.streetNumber;
+    }
+
+    public String getStreet() {
+        return this.street;
     }
 
     public String getCity() {
