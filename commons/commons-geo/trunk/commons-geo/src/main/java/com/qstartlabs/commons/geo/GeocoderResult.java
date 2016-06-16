@@ -21,7 +21,7 @@ public class GeocoderResult implements java.io.Serializable {
     public static final int INTERSECTION = 7;
     public static final int ADDRESS = 8;
     public static final int PREMISE = 9;
-    
+
     private double latitude;
     private double longitude;
     private int accuracy;
@@ -29,6 +29,7 @@ public class GeocoderResult implements java.io.Serializable {
     private String street;
     private String city;
     private String state;
+    private String county;
     private String zipCode;
     private String country;
     private GeocoderStatus statusCode;
@@ -69,6 +70,12 @@ public class GeocoderResult implements java.io.Serializable {
     	this.correctedAddress = correctedAddress;
     }
 
+    public GeocoderResult(double latitude, double longitude, int accuracy, String streetNumber, String street, String city, String state, String county, String zipCode,
+                          String country, GeocoderStatus statusCode, String correctedAddress) {
+        this(latitude, longitude, accuracy, streetNumber, street, city, state, zipCode, country, statusCode);
+        this.correctedAddress = correctedAddress;
+        this.county = county;
+    }
 	public String getCorrectedAddress() {
 		return correctedAddress;
 	}
@@ -116,6 +123,8 @@ public class GeocoderResult implements java.io.Serializable {
     public void setStatusCode(GeocoderStatus statusCode) {
         this.statusCode = statusCode;
     }
+
+    public String getCounty() { return this.county; }
 
     /**
      * Returns a constant indicating how accurately the location was geo-coded.
