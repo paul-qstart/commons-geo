@@ -51,4 +51,12 @@ public class GeocodeV3Test {
 		assertEquals("43215", geocoderResult.getZipCode());
 	}
 
+	@Test
+	public void testGetCountyByLocation() {
+		Geocoder geocoder = new GoogleGeoCoder();
+		GeocoderResult geocoderResult = geocoder.getLocation("276 Marconi Blvd, Columbus, OH 43214");
+		assertNotNull(geocoderResult);
+		assertEquals("Franklin County", geocoderResult.getCounty());
+	}
+
 }

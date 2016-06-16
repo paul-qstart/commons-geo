@@ -439,6 +439,7 @@ public class GoogleGeoCoder implements Geocoder {
         String street = "";
         String city = "";
         String state = "";
+        String county = "";
         String zipCode = "";
         String countryCode = "";
         String correctedAddress = "";
@@ -499,6 +500,7 @@ public class GoogleGeoCoder implements Geocoder {
 	                        	}
 	                        	else if (type.equals(ADMINISTRATIVE_AREA2)) {
 	                        		if (GeocoderResult.SUB_REGION > geoAccuracy) geoAccuracy = GeocoderResult.SUB_REGION;
+                                    county = addressComponent.getString(SHORT_NAME);
 	                        	}
 	                        	else if (type.equals(LOCALITY)) {
 	                        		if (GeocoderResult.TOWN > geoAccuracy) geoAccuracy = GeocoderResult.TOWN;
@@ -573,7 +575,7 @@ public class GoogleGeoCoder implements Geocoder {
             accuracy = GeocoderResult.UNKNOWN_LOCATION;
         }
         logger.info("Accuracy Frequency :" + frequency);
-        return new GeocoderResult(latitude, longitude, accuracy, streetNumber, street, city, state, zipCode, countryCode, statusCode, correctedAddress);
+        return new GeocoderResult(latitude, longitude, accuracy, streetNumber, street, city, state, county, zipCode, countryCode, statusCode, correctedAddress);
     }
 
     /**
