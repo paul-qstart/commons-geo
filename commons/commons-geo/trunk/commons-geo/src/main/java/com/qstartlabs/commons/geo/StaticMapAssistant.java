@@ -38,7 +38,11 @@ public class StaticMapAssistant {
                 stringBuilder.append("&region="+parameters.getRegion());
             }
             if (!StringUtils.isBlank(parameters.getMarkers())) {
-                stringBuilder.append("&markers="+parameters.getMarkers());
+                if(!StringUtils.isBlank(parameters.getIconUrl())) {
+                    stringBuilder.append("&markers=icon:"+parameters.getIconUrl()+"|"+parameters.getMarkers());
+                } else {
+                    stringBuilder.append("&markers="+parameters.getMarkers());
+                }
             }
             if (!StringUtils.isBlank(parameters.getPath())) {
                 stringBuilder.append("&path="+parameters.getPath());

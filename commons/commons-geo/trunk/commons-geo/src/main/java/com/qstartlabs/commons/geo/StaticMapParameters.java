@@ -14,6 +14,7 @@ public class StaticMapParameters {
     private String path;
     private String visible;
     private String style;
+    private String iconUrl;
 
     public String getCenter() {
         return center;
@@ -109,5 +110,13 @@ public class StaticMapParameters {
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public String getIconUrl() {
+        return iconUrl;
+    }
+
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
     }
 }
