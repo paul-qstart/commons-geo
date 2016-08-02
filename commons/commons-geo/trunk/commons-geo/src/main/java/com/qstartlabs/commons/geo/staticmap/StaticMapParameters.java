@@ -1,4 +1,7 @@
-package com.qstartlabs.commons.geo;
+package com.qstartlabs.commons.geo.staticmap;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class StaticMapParameters {
 
@@ -10,11 +13,10 @@ public class StaticMapParameters {
     private String maptype;
     private String language;
     private String region;
-    private String markers;
     private String path;
     private String visible;
     private String style;
-    private String iconUrl;
+    private List<StaticMapMarkerList> markerLists = new ArrayList<StaticMapMarkerList>();
 
     public String getCenter() {
         return center;
@@ -80,14 +82,6 @@ public class StaticMapParameters {
         this.region = region;
     }
 
-    public String getMarkers() {
-        return markers;
-    }
-
-    public void setMarkers(String markers) {
-        this.markers = markers;
-    }
-
     public String getPath() {
         return path;
     }
@@ -112,11 +106,16 @@ public class StaticMapParameters {
         this.style = style;
     }
 
-    public String getIconUrl() {
-        return iconUrl;
+    public List<StaticMapMarkerList> getMarkerLists() {
+        return markerLists;
     }
 
-    public void setIconUrl(String iconUrl) {
-        this.iconUrl = iconUrl;
+    public void setMarkerLists(List<StaticMapMarkerList> markerLists) {
+        this.markerLists = markerLists;
+    }
+
+    public void setMarkers(StaticMapMarkerList markerList) {
+        this.markerLists = new ArrayList<StaticMapMarkerList>();
+        this.markerLists.add(markerList);
     }
 }
