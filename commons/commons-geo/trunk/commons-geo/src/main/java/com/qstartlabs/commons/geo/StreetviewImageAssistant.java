@@ -3,6 +3,13 @@ package com.qstartlabs.commons.geo;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 public class StreetviewImageAssistant {
 
     private static final String CLIENT_ID = "gme-qstartlabsllc";
@@ -40,6 +47,19 @@ public class StreetviewImageAssistant {
             logger.debug("getStreetviewImageURL() -- Error signing request: "+e.getMessage(), e);
         }
         return null;
+    }
+
+    public static ByteArrayOutputStream getStreetviewImage(StreetviewImageParameters params, String imageFormat) throws IOException, URISyntaxException {
+        String requestUrl = getStreetviewImageURL(params);
+
+        ByteArrayOutputStream image = new ByteArrayOutputStream();
+        if (requestUrl != null) {
+            URL url = new URL(requestUrl);
+            BufferedImage bufferedImage = ImageIO.read(url);
+            ImageIO.write(bufferedImage, imageFormat, image);
+        }
+
+        return image;
     }
 
 }

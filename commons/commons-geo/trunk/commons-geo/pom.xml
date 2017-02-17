@@ -10,6 +10,7 @@
 	<properties>
 		<java-version>1.6</java-version>
 		<spring.version>3.1.0.RELEASE</spring.version>
+		<geotools.version>10.8</geotools.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -152,6 +153,17 @@
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-referencing</artifactId>
+            <version>${geotools.version}</version>
+		</dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-wkt</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
 	</dependencies>
         <!-- Automatically publish our changes to our repository -->
 	<distributionManagement>
@@ -165,5 +177,4 @@
                 <url>https://qlabs.toolscloud.net/nexus/content/repositories/snapshots</url>
             </snapshotRepository>
 	</distributionManagement>
-
 </project>

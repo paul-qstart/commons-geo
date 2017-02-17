@@ -366,7 +366,7 @@ public class GoogleGeoCoder implements Geocoder {
         return result;
     }
 
-    private static synchronized GeocoderResult makeRequest(String url, String location) {
+    private static GeocoderResult makeRequest(String url, String location) {
         GeocoderResult geoResult = null;
         JSONObject googleResult = null;
 
@@ -381,7 +381,7 @@ public class GoogleGeoCoder implements Geocoder {
                 Thread.sleep(sleepTime);
             } catch (InterruptedException ignored) {
             }
-            googleResult = makeRequestInternal(url);
+            googleResult = HttpAssitant.makeRequestInternal(url);
             geoResult = decodeJSON(googleResult, location);
             if (!geoResult.getStatusCode().equals(GeocoderStatus.UNKNOWN_ERROR)) {
                 if (delay > MIN_DELAY) {
@@ -400,30 +400,6 @@ public class GoogleGeoCoder implements Geocoder {
 
         lastUsedTime = System.currentTimeMillis();
         return geoResult;
-    }
-
-    private static synchronized JSONObject makeRequestInternal(String unsignedUrl) {
-        JSONObject googleResult = null;
-        long t0 = System.nanoTime();
-
-        String url = unsignedUrl;
-        
-        try {
-            url = RequestSigner.signRequest(unsignedUrl);
-    	    HttpsURLConnection connection = (HttpsURLConnection) new URL(url).openConnection();
-    	    Reader reader = new InputStreamReader(connection.getInputStream(), DEFAULT_ENCODING);
-    	    
-    	    JSONTokener jTokener = new JSONTokener(reader);
-            googleResult = new JSONObject(jTokener);
-    	    
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
-
-        long t1 = System.nanoTime() - t0;
-        logger.info("GoogleGeoCoder.java::makeRequestInternal() took: " + (t1 / 1000000000.0) + " second(s)");
-
-        return googleResult;
     }
 
     /**
